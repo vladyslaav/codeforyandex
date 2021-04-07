@@ -1,0 +1,536 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Tulpep.NotificationWindow;
+using System.Security.Cryptography;
+using System.IO;
+using System.Security.AccessControl;
+
+namespace Encoder
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            tb_key.Text = "Введите секретный ключ";
+            tb_key.ForeColor = Color.Gray;
+        }
+
+        private void btn_close_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        
+
+        private void btn_copy_Click(object sender, EventArgs e)
+        {
+            if (tb_result.Text != "")
+            {
+                Clipboard.SetText(tb_result.Text.ToString());
+                popup.Popup();
+            }
+        }
+        private PopupNotifier popup = null;
+        private PopupNotifier popup2 = null;
+        private PopupNotifier popup3 = null;
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            rdo_file1.Checked = true;
+            if (rdo_file1.Checked == true)
+            {
+                bt_decrypt.Enabled = false;
+                label3.Enabled = false;
+                textBox2.Enabled = false;
+                textBox2.Text = "";
+                bt_decrypt.BackgroundImage = Encoder.Properties.Resources.Unlock1;
+                bt_decrypt.Enabled = false;
+                bt_decrypt.Cursor = Cursors.No;
+            }
+            textBox2.ForeColor = Color.Gray;
+            textBox1.Text = "C:\\";
+            textBox1.ForeColor = Color.Gray;
+            cb_alg.SelectedIndex = 0;
+            tb_key.Text = "Введите секретный ключ";
+            tb_key.ForeColor = Color.Gray;
+            popup = new PopupNotifier();
+            popup.Image = Properties.Resources.copy;
+            popup.ImageSize = new Size(96, 96);
+            popup.TitleText = "Шифровальщик";
+            popup.ContentText = "Данные успешно скопированы в буфер обмена.";
+            popup.TitleColor = Color.AliceBlue;
+            popup.ContentFont = new Font("Tahoma", 12);
+            popup.TitleFont = new Font("Tahoma", 14);
+            popup.HeaderColor = Color.Red;
+            popup.BodyColor = Color.AliceBlue;
+            popup.ShowCloseButton = false;
+
+            popup2 = new PopupNotifier();
+            popup2.Image = Properties.Resources.copy;
+            popup2.ImageSize = new Size(96, 96);
+            popup2.TitleText = "Шифровальщик";
+            popup2.ContentText = "Файл успешно зашифрован и сохранен в папку с исходным файлом";
+            popup2.TitleColor = Color.AliceBlue;
+            popup2.ContentFont = new Font("Tahoma", 12);
+            popup2.TitleFont = new Font("Tahoma", 14);
+            popup2.HeaderColor = Color.Red;
+            popup2.BodyColor = Color.AliceBlue;
+            popup2.ShowCloseButton = false;
+
+            popup2 = new PopupNotifier();
+            popup2.Image = Properties.Resources.copy;
+            popup2.ImageSize = new Size(96, 96);
+            popup2.TitleText = "Шифровальщик";
+            popup2.ContentText = "Файл успешно расшифрован и сохранен в папку с зашифрованным файлом";
+            popup2.TitleColor = Color.AliceBlue;
+            popup2.ContentFont = new Font("Tahoma", 12);
+            popup2.TitleFont = new Font("Tahoma", 14);
+            popup2.HeaderColor = Color.Red;
+            popup2.BodyColor = Color.AliceBlue;
+            popup2.ShowCloseButton = false;
+        }
+
+        private void tb_key_Enter(object sender, EventArgs e)
+        {
+            if (tb_key.Text == "Введите секретный ключ")
+            {
+                tb_key.Text = null;
+                tb_key.ForeColor = Color.Black;
+            }
+        }
+        private void tb_key_Leave(object sender, EventArgs e)
+        {
+            if (tb_key.Text == "")
+            {
+                tb_key.Text = "Введите секретный ключ";
+                tb_key.ForeColor = Color.Gray;
+            }
+        }
+
+        private void grp_type_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "Введите строку для шифрования")
+            {
+                textBox2.Text = null;
+                textBox2.ForeColor = Color.Black;
+            }
+        }
+
+        private void textBox2_Leave(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "")
+            {
+                textBox2.Text = "Введите строку для шифрования";
+                textBox2.ForeColor = Color.Gray;
+            }
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void rdo_file1_Click(object sender, EventArgs e)
+        {
+            if (rdo_file1.Checked == true)
+            {
+                bt_decrypt.BackgroundImage = Encoder.Properties.Resources.Unlock1;
+                bt_decrypt.Enabled = false;
+                bt_decrypt.Cursor = Cursors.No;
+                label3.Enabled = false;
+                textBox2.Enabled = false;
+                label2.Enabled = true;
+                bt_view.Enabled = true;
+                textBox1.Enabled = true;
+                textBox2.Text = "";
+            }
+        }
+
+        private void rdo_file2_Click(object sender, EventArgs e)
+        {
+            if (rdo_file2.Checked == true)
+            {
+                bt_decrypt.BackgroundImage = Encoder.Properties.Resources.Unlock;
+                bt_decrypt.Enabled = true;
+                bt_decrypt.Cursor = Cursors.Default;
+                label3.Enabled = false;
+                textBox2.Enabled = false;
+                label2.Enabled = true;
+                bt_view.Enabled = true;
+                textBox1.Enabled = true;
+                textBox2.Text = "";
+            }
+        }
+
+        private void rdo_string_Click(object sender, EventArgs e)
+        {
+            if (rdo_string.Checked == true)
+            {
+                bt_decrypt.BackgroundImage = Encoder.Properties.Resources.Unlock;
+                bt_decrypt.Enabled = true;
+                bt_decrypt.Cursor = Cursors.Default;
+                label3.Enabled = true;
+                textBox2.Enabled = true;
+                label2.Enabled = false;
+                bt_view.Enabled = false;
+                textBox1.Enabled = false;
+                textBox2.Text = "Введите строку для шифрования";
+            }
+        }
+
+        private void btn_gen_Click(object sender, EventArgs e)
+        {
+
+            if (rdo_file1.Checked == true)
+            {
+                if (textBox1.Text != @"C:\")
+                {
+                    if (tb_key.Text == "Введите секретный ключ")
+                    {
+                        if (cb_alg.SelectedIndex == 0)
+                        {
+                            tb_result.Text = CalculateMD5(textBox1.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 1)
+                        {
+                            tb_result.Text = CalculateSHA128(textBox1.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 2)
+                        {
+                            tb_result.Text = CalculateSHA256(textBox1.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 3)
+                        {
+                            tb_result.Text = CalculateSHA512(textBox1.Text);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Похоже, вы неверно указали алгоритм хеширования или данный алгоритм не поддерживает хеширование", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        if (cb_alg.SelectedIndex == 0)
+                        {
+                            tb_result.Text = CalculateHMACMD5(textBox1.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 1)
+                        {
+                            tb_result.Text = CalculateHMACSHA128(textBox1.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 2)
+                        {
+                            tb_result.Text = CalculateHMACSHA256(textBox1.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 3)
+                        {
+                            tb_result.Text = CalculateHMACSHA512(textBox1.Text, tb_key.Text);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Похоже, вы неверно указали алгоритм хеширования или данный алгоритм не поддерживает хеширование", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Видимо вы забыли выбрать файл", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else if (rdo_string.Checked == true)
+            {
+                if (textBox2.Text != "Введите строку для шифрования")
+                {
+                    if (tb_key.Text == "Введите секретный ключ")
+                    {
+                        if (cb_alg.SelectedIndex == 0)
+                        {
+                            tb_result.Text = CalculateMD5s(textBox2.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 1)
+                        {
+                            tb_result.Text = CalculateSHA128s(textBox2.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 2)
+                        {
+                            tb_result.Text = CalculateSHA256s(textBox2.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 3)
+                        {
+                            tb_result.Text = CalculateSHA512s(textBox2.Text);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Похоже, вы неверно указали алгоритм шифрования или данный алгоритм не поддерживает хеширование", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        if (cb_alg.SelectedIndex == 0)
+                        {
+                            tb_result.Text = CalculateHMACMD5s(textBox2.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 1)
+                        {
+                            tb_result.Text = CalculateHMACSHA128s(textBox2.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 2)
+                        {
+                            tb_result.Text = CalculateHMACSHA256s(textBox2.Text, tb_key.Text);
+                        }
+                        else if (cb_alg.SelectedIndex == 3)
+                        {
+                            tb_result.Text = CalculateHMACSHA512s(textBox2.Text, tb_key.Text);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Похоже, вы неверно указали алгоритм шифрования или данный алгоритм не поддерживает хеширование", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Похоже, что вы не ввели строку для шифрования (хеширования)", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else if (rdo_file2.Checked == true)
+            {
+                if (textBox1.Text != @"C:\")
+                {
+                    if (cb_alg.SelectedIndex == 4)
+                    {
+                        byte[] MyFile = File.ReadAllBytes(textBox1.Text);
+                        byte[] NewFile = Crypt(MyFile);
+                        string NewFileName = GetNewFileName(textBox1.Text);
+                        File.WriteAllBytes(NewFileName, NewFile);
+                        popup2.Popup();
+                    } else
+                    {
+                        MessageBox.Show("Похоже, вы неверно указали алгоритм шифрования или данный алгоритм его не поддерживает", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        private void bt_decrypt_Click(object sender, EventArgs e)
+        {
+            if (textBox1.Text != @"C:\")
+            {
+                if (cb_alg.SelectedIndex == 4)
+                {
+                    byte[] MyFile = File.ReadAllBytes(textBox1.Text);
+                    byte[] NewFile = DeCrypt(MyFile);
+                    string NewFileName = GetNewFileName(textBox1.Text);
+                    File.WriteAllBytes(NewFileName, NewFile);
+                    MessageBox.Show(NewFileName);
+                    popup3.Popup();
+
+                }
+                else
+                {
+                    MessageBox.Show("Похоже, вы неверно указали алгоритм шифрования или данный алгоритм его не поддерживает", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        string GetNewFileName(string FileName)
+        {
+            return FileName.EndsWith(".crypt") ? FileName.Remove(FileName.LastIndexOf(".crypt")) : FileName + ".crypt";
+        }
+
+            byte[] DeCrypt(byte[] bytes)
+            {
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] ^= 1;
+                return bytes;
+            }
+
+            byte[] Crypt(byte[] bytes)
+        {
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] ^= 1;
+            return bytes;
+        }
+        #region 16 функций хеширования (4 строка + 4 файл + 2х4 HMAC (key)
+        static string CalculateMD5(string filename)
+        {
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    var hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
+            }
+        }
+        static string CalculateSHA128(string filename)
+        {
+            using (var sha128 = SHA1.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    var hash = sha128.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
+            }
+        }
+
+        static string CalculateSHA256(string filename)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    var hash = sha256.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
+            }
+        }
+
+        static string CalculateSHA512(string filename)
+        {
+            using (var sha512 = SHA512.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    var hash = sha512.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
+            }
+        }
+
+        static string CalculateHMACMD5(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACMD5 hmac = new HMACMD5(enc.GetBytes(key));
+            hmac.Initialize();
+            var stream = File.OpenRead(filename);
+            var hash = hmac.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA128(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA1 hmac = new HMACSHA1(enc.GetBytes(key));
+            hmac.Initialize();
+            var stream = File.OpenRead(filename);
+            var hash = hmac.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA256(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA256 hmac = new HMACSHA256(enc.GetBytes(key));
+            hmac.Initialize();
+            var stream = File.OpenRead(filename);
+            var hash = hmac.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA512(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA512 hmac = new HMACSHA512(enc.GetBytes(key));
+            hmac.Initialize();
+            var stream = File.OpenRead(filename);
+            var hash = hmac.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+
+
+        static string CalculateHMACMD5s(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACMD5 hmac = new HMACMD5(enc.GetBytes(key));
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA128s(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA1 hmac = new HMACSHA1(enc.GetBytes(key));
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA256s(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA256 hmac = new HMACSHA256(enc.GetBytes(key));
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateHMACSHA512s(string filename, string key)
+        {
+            var enc = Encoding.ASCII;
+            HMACSHA512 hmac = new HMACSHA512(enc.GetBytes(key));
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+
+        static string CalculateMD5s(string filename)
+        {
+            var enc = Encoding.ASCII;
+            var hmac = MD5.Create();
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateSHA128s(string filename)
+        {
+            var enc = Encoding.ASCII;
+            var hmac = SHA1.Create();
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateSHA256s(string filename)
+        {
+            var enc = Encoding.ASCII;
+            var hmac = SHA256.Create();
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        static string CalculateSHA512s(string filename)
+        {
+            var enc = Encoding.ASCII;
+            var hmac = SHA512.Create();
+            hmac.Initialize();
+            byte[] buffer = enc.GetBytes(filename);
+            return BitConverter.ToString(hmac.ComputeHash(buffer)).Replace("-", "").ToLower();
+        }
+        #endregion
+        private void bt_view_Click_1(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+            open.InitialDirectory = "C:/Users/puzan/Desktop/учеба/Функциональное программирование и распределенные системы/шифратор";
+            open.Filter = "Crypt files (*.crypt*)|*.crypt*|txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            open.FilterIndex = 2;
+            open.RestoreDirectory = true;
+            if (open.ShowDialog() == System.Windows.Forms.DialogResult.OK && open.FileName.Length > 0)
+            {
+                textBox1.Text = open.FileName.ToString();
+            }
+        }
+
+    }
+}
